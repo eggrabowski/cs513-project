@@ -1,13 +1,14 @@
-mydir = 'C:\Users\l\Desktop';
+mydir = 'D:\cs513-project\result1';
 cd(mydir);
 
-filename = 'results.txt';
+filename = '190.txt';
 
 display('TODO');
 
 data = importdata(filename,',');
 
-x = data(row,1);
-y = data(row,2);
+x = data(:,1);
+y = data(:,2);
 
-scatter(x,y,'filled')
+a = 5;
+scatter(x,y,a,'filled')
