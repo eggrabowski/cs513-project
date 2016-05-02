@@ -11,12 +11,10 @@ for i = 4:num_folder
         filename = fullfile(foldername,folder_dir(j).name);
         data = importdata(filename,',');
         if (size(data,2) == 6)
-            num_max = max(data(:,5));
-            num_min = min(data(:,5));
-            num_cen = ((num_max-num_min)/3)+3.5;
+            num_med = median(data(:,5));
             for row = 1: size(data,1)
-                if data(row, 6)/255 > 0.755 && (data(row, 5) < num_max - num_cen || data(row, 5) > num_min + num_cen) 
-                    fprintf(fid,' %e, %e, %e, %e\n',data(row,3),data(row,4),data(row,5),data(row, 6)/255);
+                if data(row, 6)/255 > 0.75 && (data(row, 5) < num_med+0.5 && data(row, 5) > num_med-0.5) 
+                    fprintf(fid,' %e, %e, %e\n',data(row,3),data(row,4),data(row,5));
                 end
             end
         end 
