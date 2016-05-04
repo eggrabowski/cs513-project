@@ -1,11 +1,10 @@
 %Change the following dir to include your own local directory
-mydir = '.';
+mydir = '/Users/guil/repo/cs513-project/result1/';
 cd(mydir);
 
 filename = 'final.txt';
 
-display ('TODO');
-
+display('Importing input data...');
 data = importdata(filename,',');
 
 
@@ -27,9 +26,13 @@ sliceSize=15000;
 len = length(x);
 nSlices = ceil(len/sliceSize);
 
+display('Removing noise from input data...');
 fid = fopen( 'final_noise_rem.txt', 'wt' );
 
 for i=1:nSlices,
+    Text = ['    +Processing slice number ', num2str(i), ' of ', num2str(nSlices), '...'];
+    disp(Text);
+
     minIndex = (sliceSize*(i-1))+1;
     maxIndex = minIndex + (sliceSize-1);
     if (maxIndex>len), 
@@ -43,15 +46,34 @@ for i=1:nSlices,
         if (IDX(j)==biggestCluster)
             fprintf(fid,' %e, %e, %e\n',X(j,1),X(j,2),X(j,3));
         end
-    end
+    end    
 end
 
 fclose(fid);
 
+disp('OK')
+
 data = importdata('final_noise_rem.txt',',');
 
-x2 = data(:,1);
-y2 = data(:,2);
-z2 = data(:,3);
+for count = 1:6
+    
+    Text = ['    +Processing figure number ', num2str(count), '...'];
+    disp(Text);
+    lowestBound = (count - 1) * 100000 + 1;
+    higestBound = count * 100000;
+    x2 = data(lowestBound:higestBound,1);
+    y2 = data(lowestBound:higestBound,2);
+    z2 = data(lowestBound:higestBound,3);
 
-scatter3(z2,y2,x2,5, 'filled');
+    f = figure();
+    scatter3(z2,y2,x2, 'filled')
+    s1 = 'finalData/figure';
+    s2 = '.png';
+    
+    sF = strcat (s1,num2str(count));
+    sF = strcat (sF, s2);
+    
+    saveas(f, sF);
+end
+
+display ('DONE');
