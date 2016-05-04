@@ -66,7 +66,7 @@ for count = 1:6
     z2 = data(lowestBound:higestBound,3);
 
     f = figure();
-    scatter3(z2,y2,x2, 'filled')
+    scatter3(x2,y2,z2, 'filled');
     s1 = 'finalData/figure';
     s2 = '.png';
     
