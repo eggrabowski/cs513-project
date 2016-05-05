@@ -55,7 +55,12 @@ disp('OK')
 
 data = importdata('final_noise_rem.txt',',');
 
-for count = 1:6
+
+figures = floor(length(data) / 100000);
+rest = length(data) - figures*100000;
+
+
+for count = 1:figures
     
     Text = ['    +Processing figure number ', num2str(count), '...'];
     disp(Text);
@@ -66,7 +71,7 @@ for count = 1:6
     z2 = data(lowestBound:higestBound,3);
 
     f = figure();
-    scatter3(x2,y2,z2, 'filled');
+    scatter3(x2,y2,z2,1, 'filled');
     s1 = 'finalData/figure';
     s2 = '.png';
     
@@ -76,4 +81,24 @@ for count = 1:6
     saveas(f, sF);
 end
 
-display ('DONE');
+    count = figures + 1;
+    Text = ['    +Processing figure number ', num2str(count), '...'];
+    disp(Text);
+    lowestBound = (count - 1) * 100000 + 1;
+    higestBound = (count - 1) * 100000 + rest;
+    x2 = data(lowestBound:higestBound,1);
+    y2 = data(lowestBound:higestBound,2);
+    z2 = data(lowestBound:higestBound,3);
+
+    f = figure();
+    scatter3(x2,y2,z2,1, 'filled');
+    s1 = 'finalData/figure';
+    s2 = '.png';
+    
+    sF = strcat (s1,num2str(count));
+    sF = strcat (sF, s2);
+    
+    saveas(f, sF);
+    
+
+disp ('DONE');
