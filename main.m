@@ -1,92 +1,99 @@
-%%%%%%%%%%%%%%%%%%
-%     CS-513     %
-%  Final Project %
-%%%%%%%%%%%%%%%%%%
+%Change the following dir to include your own local directory
+inputDir = '/Users/guil/Downloads/cs513-project/input';
+outputDir = '/Users/guil/Downloads/cs513-project/output';
+cd(inputDir);
 
-display('Initializing script...');
+filename = 'final.txt';
 
-%set the folder path
-%ATTENTION. CHANGE DIR TO YOUR PERSONAL DIR WHERE YOUR POINTCLOUD FILES ARE
-mydir = '/Users/guil/repo/cs513-project/data/';
-cd(mydir);
+display('Importing input data...');
+data = importdata(filename,',');
 
 
-%opening input file and importing data
-fprintf('Opening file "dump0000.txt"... ');
-filename_1 = 'dump0000.txt';
+x = data(:,1);
+y = data(:,2);
+z = data(:,3);
+a = 1;
+epsilon = 0.00005;
+MinPts=1;
+sliceSize=15000;
 
-display('TODO');
+len = length(x);
+nSlices = ceil(len/sliceSize);
 
-return;
+display('Removing noise from input data...');
+cd(outputDir);
+fid = fopen( 'final_noise_rem.txt', 'wt' );
 
-%% BELOW THIS LINE IT STILL DOES NOT WORK. I HAVE TO FIX IT
+for i=1:nSlices,
+    Text = ['    +Processing slice number ', num2str(i), ' of ', num2str(nSlices), '...'];
+    disp(Text);
 
-
-delimiterIn = ',';
-
-
-%str = '0.41 8.24 3.57 6.24 9.27';
-%C = textscan(str,'%f');
-%A_aux = dlmread(filename_1,delimiterIn);
-
-%A_aux = textscan(filename_1, '%f', ',');
-
-A_aux = importdata(filename_1);
-
-display('OK');
-
-fprintf('Transforming to xyz data... ');
-
-%Applies function to transform the point to xyz coordinates
-for row = 1:size(A,1)
-    [A(row,1),A(row,2),A(row,3)] = lla2ecef(A_aux(row,3),A_aux(row,4),A_aux(row,5));
-    A(row,4) = A_aux(row,4);
+    minIndex = (sliceSize*(i-1))+1;
+    maxIndex = minIndex + (sliceSize-1);
+    if (maxIndex>len), 
+        maxIndex=len;
+    end
+    X=[x(minIndex:maxIndex) y(minIndex:maxIndex) z(minIndex:maxIndex)];
+    Y=[x(minIndex:maxIndex) y(minIndex:maxIndex)];
+    IDX=DBSCAN(Y,epsilon,MinPts);
+    biggestCluster=getBiggestCluster(IDX);
+    for j=1:length(IDX),
+        if (IDX(j)==biggestCluster)
+            fprintf(fid,' %e, %e, %e\n',X(j,1),X(j,2),X(j,3));
+        end
+    end    
 end
 
-A = rot90(A,3);
+fclose(fid);
 
-display('OK');
+disp('OK')
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+data = importdata('final_noise_rem.txt',',');
 
-%opening file 2
-fprintf('Opening file "pointcloud2.fuse"... ');
-filename_2 = 'pointcloud2.fuse';
 
-B = importdata(filename_2, delimiterIn);
+figures = floor(length(data) / 100000);
+rest = length(data) - figures * 100000;
 
-display('OK');
 
-fprintf('Transforming to xyz data... ');
+for count = 1:figures
+    
+    Text = ['    +Processing figure number ', num2str(count), '...'];
+    disp(Text);
+    lowestBound = (count - 1) * 100000 + 1;
+    higestBound = count * 100000;
+    x2 = data(lowestBound:higestBound,1);
+    y2 = data(lowestBound:higestBound,2);
+    z2 = data(lowestBound:higestBound,3);
 
-%Applies function to transform the point to xyz coordinates
-for row = 1:size(B,1)
-    [B(row,1),B(row,2),B(row,3)] = lla2ecef(B(row,1),B(row,2),B(row,3));
+    f = figure();
+    scatter3(x2,y2,z2,1, 'filled');
+    s1 = 'figures/figure';
+    s2 = '.png';
+    
+    sF = strcat (s1,num2str(count));
+    sF = strcat (sF, s2);
+    
+    saveas(f, sF);
 end
 
-B = rot90(B,3);
+    count = figures + 1;
+    Text = ['    +Processing figure number ', num2str(count), '...'];
+    disp(Text);
+    lowestBound = (count - 1) * 100000 + 1;
+    higestBound = (count - 1) * 100000 + rest;
+    x2 = data(lowestBound:higestBound,1);
+    y2 = data(lowestBound:higestBound,2);
+    z2 = data(lowestBound:higestBound,3);
 
-display('OK');
+    f = figure();
+    scatter3(x2,y2,z2,1, 'filled');
+    s1 = 'figures/figure';
+    s2 = '.png';
+    
+    sF = strcat (s1,num2str(count));
+    sF = strcat (sF, s2);
+    
+    saveas(f, sF);
+    
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-fprintf('Applying transformation matrix... ');
-
-
-resultA = T * A;
-resultB = T * B;
-
-display('OK');
-
-fprintf('Writing output file "A_result.txt"... ');
-dlmwrite('A_result.txt',resultA);
-display('OK');
-
-fprintf('Writing output file "B_result.txt"... ');
-dlmwrite('B_result.txt',resultB);
-display('OK');
-
-display('Script executed sucessfully');
-
-
-
+disp ('DONE');
